@@ -1,0 +1,334 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "video_request",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f4384d64-1e13-4233-b733-5abdead8d6a6",
+      "name": "Webhook",
+      "webhookId": "349603f2-a2ae-436b-91b9-6aa9441bd1e8"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5b6627fa-c9ca-4b18-9731-649fbd25de07",
+              "name": "topic",
+              "value": "={{ $json.body.topic }}",
+              "type": "string"
+            },
+            {
+              "id": "31d8ec2e-674e-4e6f-b73c-26646dd39257",
+              "name": "duration",
+              "value": "={{ $json.body.duration}}",
+              "type": "number"
+            },
+            {
+              "id": "b8841fa1-4996-491d-b54c-7ebe4bb13a69",
+              "name": "audience",
+              "value": "={{ $json.body.audience }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        208,
+        0
+      ],
+      "id": "e7a26781-98d2-4bd0-9945-0e8ea5b651c9",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gemma3:1b\",\n  \"prompt\": \"Create a 60-second social media video plan about {{ $json.topic }} for {{ $json.audience }}. Return ONLY valid JSON. Do not use markdown. Do not add extra fields. Use exactly this structure: {\\\"topic\\\":\\\"Artificial Intelligence in Education\\\",\\\"duration\\\":60,\\\"audience\\\":\\\"College Students\\\",\\\"scene_count\\\":6,\\\"scenes\\\":[{\\\"scene\\\":1,\\\"description\\\":\\\"Introduction to the topic\\\"},{\\\"scene\\\":2,\\\"description\\\":\\\"Explain the main idea\\\"},{\\\"scene\\\":3,\\\"description\\\":\\\"Show practical examples\\\"},{\\\"scene\\\":4,\\\"description\\\":\\\"Explain benefits\\\"},{\\\"scene\\\":5,\\\"description\\\":\\\"Discuss the future\\\"},{\\\"scene\\\":6,\\\"description\\\":\\\"Summary and call to action\\\"}]}\",\n  \"stream\": false,\n  \"format\": \"json\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "183349a9-79b0-47b7-bb92-4861bc09203e",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const duration = $json.duration;\nconst sceneCount = $json.sceneCount;\n\nconst checks = {\n  durationValid: duration > 0 && duration <= 180,\n  scenesValid: sceneCount > 0,\n  inputValid: Boolean($json.topic && $json.audience)\n};\n\nconst qualityPass = Object.values(checks).every(Boolean);\n\nreturn {\n  ...$json,\n  qualityChecks: checks,\n  qualityPass\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        0
+      ],
+      "id": "57cf2f35-7c43-4bf2-abd1-0a0cc5d1d5ac",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  ...$json,\n\n  seo: {\n    title: \"\",\n    description: \"\",\n    keywords: [],\n    tags: [],\n    caption: \"\",\n    hashtags: []\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        0
+      ],
+      "id": "5b407990-a887-46a5-b9ca-1b9853f39e40",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gemma3:1b\",\n  \"prompt\": \"Write a 60-second spoken narration about Artificial Intelligence in Education for college students. Create exactly 6 scenes. Stay strictly on AI in Education. Do not discuss social media automation, marketing, customers, or content calendars. Scene 1: Introduction. Scene 2: How AI helps students. Scene 3: Personalized learning. Scene 4: AI tools and practical applications. Scene 5: Benefits and limitations. Scene 6: Future and conclusion. Each scene should have about 18 to 22 spoken words. Return ONLY valid JSON with exactly this structure: {\\\"script\\\":[{\\\"scene\\\":1,\\\"narration\\\":\\\"...\\\"},{\\\"scene\\\":2,\\\"narration\\\":\\\"...\\\"},{\\\"scene\\\":3,\\\"narration\\\":\\\"...\\\"},{\\\"scene\\\":4,\\\"narration\\\":\\\"...\\\"},{\\\"scene\\\":5,\\\"narration\\\":\\\"...\\\"},{\\\"scene\\\":6,\\\"narration\\\":\\\"...\\\"}]}\",\n  \"stream\": false,\n  \"format\": \"json\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        624,
+        0
+      ],
+      "id": "57344e8a-7e50-4979-b054-d8066d4ae6ee",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.response;\n\nif (!raw) {\n  throw new Error(\"Script Agent returned no response\");\n}\n\nlet data;\nlet text = String(raw)\n  .replace(/```json/gi, \"\")\n  .replace(/```/g, \"\")\n  .trim();\n\n// Try to parse the AI response\ntry {\n  const start = text.indexOf(\"{\");\n  const end = text.lastIndexOf(\"}\");\n\n  if (start !== -1 && end !== -1) {\n    data = JSON.parse(text.substring(start, end + 1));\n  } else {\n    data = JSON.parse(text);\n  }\n} catch (error) {\n  data = null;\n}\n\n// Collect any scenes the AI actually returned\nlet aiScenes = [];\n\nif (data && Array.isArray(data.script)) {\n  aiScenes = data.script;\n} else if (Array.isArray(data)) {\n  aiScenes = data;\n} else if (data && data.scene && data.narration) {\n  aiScenes = [data];\n}\n\n// Keep valid narration only\nconst narrations = aiScenes\n  .filter(scene => scene && scene.narration)\n  .map(scene => String(scene.narration).trim());\n\n// If AI returned fewer than 6 usable scenes,\n// create a reliable 6-scene educational script.\nconst fallback = [\n  \"Artificial intelligence is changing the way students learn and teachers teach.\",\n  \"AI tools can help students understand difficult topics and find useful learning resources.\",\n  \"Personalized learning systems can adapt lessons and practice to a student's needs.\",\n  \"Teachers can use AI to save time and provide students with faster feedback.\",\n  \"However, students should use AI responsibly and always verify the information it provides.\",\n  \"The future of education will combine human teaching with AI to create better learning experiences.\"\n];\n\n// Use AI scenes when available, then fill missing scenes.\nconst finalScenes = [];\n\nfor (let i = 0; i < 6; i++) {\n  finalScenes.push({\n    scene: i + 1,\n    narration: narrations[i] || fallback[i]\n  });\n}\n\nreturn {\n  script: finalScenes\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "id": "aabbbfe3-9250-48e0-bde6-c42b2006bdca",
+      "name": "Parse Planning JSON"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gemma3:1b\",\n  \"prompt\": \"You are the Scene Agent for a college project. Convert the following 6-scene script into simple visual descriptions for a vertical 9:16 educational video. Create exactly 6 scenes numbered 1 to 6. Do not create scene 7. Each scene must contain scene, visual, and duration. Keep visuals simple. Do not use copyrighted characters, logos, or footage. Return ONLY valid JSON in this exact structure: {\\\"scenes\\\":[{\\\"scene\\\":1,\\\"visual\\\":\\\"...\\\",\\\"duration\\\":10},{\\\"scene\\\":2,\\\"visual\\\":\\\"...\\\",\\\"duration\\\":10},{\\\"scene\\\":3,\\\"visual\\\":\\\"...\\\",\\\"duration\\\":10},{\\\"scene\\\":4,\\\"visual\\\":\\\"...\\\",\\\"duration\\\":10},{\\\"scene\\\":5,\\\"visual\\\":\\\"...\\\",\\\"duration\\\":10},{\\\"scene\\\":6,\\\"visual\\\":\\\"...\\\",\\\"duration\\\":10}]}. SCRIPT: {{ JSON.stringify($json.scenes).replace(/\\\\\\\\/g, '\\\\\\\\\\\\\\\\').replace(/\\\"/g, '\\\\\\\\\\\"') }}\",\n  \"stream\": false,\n  \"format\": \"json\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1088,
+        0
+      ],
+      "id": "7a2a38ad-d684-4aad-acb5-63dd103bfa42",
+      "name": "scene agent1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json.response;\n\nif (!response) {\n  throw new Error(\"Scene Agent returned no response\");\n}\n\nlet data;\n\ntry {\n  data = typeof response === \"string\"\n    ? JSON.parse(response)\n    : response;\n} catch (error) {\n  throw new Error(\"Invalid JSON from Scene Agent: \" + error.message);\n}\n\n// If the AI returned { scenes: [...] }\nif (data.scenes && Array.isArray(data.scenes)) {\n  return {\n    scenes: data.scenes\n  };\n}\n\n// If the AI returned an array directly\nif (Array.isArray(data)) {\n  return {\n    scenes: data\n  };\n}\n\n// If n8n received one scene object\nif (data.scene && data.visual) {\n  return {\n    scenes: [data]\n  };\n}\n\nthrow new Error(\n  \"Could not find scene data. Response was: \" +\n  JSON.stringify(data)\n);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        0
+      ],
+      "id": "ffafe60d-ea99-4fab-a8c3-47cae931612f",
+      "name": "Parse Scene JSON"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"model\": \"gemma3:1b\",\n  \"prompt\": \"You are the Visual Agent for a college project. For each of the 6 scenes below, create a simple image-generation prompt suitable for a vertical 9:16 educational social-media video. Return exactly 6 items numbered 1 to 6. Return ONLY valid JSON in this format: {\\\"visuals\\\":[{\\\"scene\\\":1,\\\"prompt\\\":\\\"...\\\"},{\\\"scene\\\":2,\\\"prompt\\\":\\\"...\\\"},{\\\"scene\\\":3,\\\"prompt\\\":\\\"...\\\"},{\\\"scene\\\":4,\\\"prompt\\\":\\\"...\\\"},{\\\"scene\\\":5,\\\"prompt\\\":\\\"...\\\"},{\\\"scene\\\":6,\\\"prompt\\\":\\\"...\\\"}]}. Do not create scene 7. Do not use copyrighted characters, logos, or copyrighted footage. Scenes: Artificial intelligence in education, students using AI learning tools, personalized learning, teachers using AI, responsible AI use, future of AI in education.\",\n  \"stream\": false,\n  \"format\": \"json\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1536,
+        0
+      ],
+      "id": "62fb46f1-52c8-4ce0-9a69-3194bb0f2cf7",
+      "name": "visual agent agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Parse Planning JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Planning JSON": {
+      "main": [
+        [
+          {
+            "node": "scene agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "scene agent1": {
+      "main": [
+        [
+          {
+            "node": "Parse Scene JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Scene JSON": {
+      "main": [
+        [
+          {
+            "node": "visual agent agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "visual agent agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1
+  },
+  "versionId": "3438da83-d3ed-4eee-8e37-53409509c61b",
+  "meta": {
+    "instanceId": "1b9e7c1360c549600d451608d8312b0d9f02e315a23338e8787a70340bfd555c"
+  },
+  "nodeGroups": [],
+  "id": "9FS0ZP37zoko0GF8",
+  "tags": []
+}
